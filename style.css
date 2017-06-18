@@ -1,0 +1,9 @@
+body {
+	overflow: hidden;
+	margin: 0;
+}
+
+canvas {
+	background-color: #CCCCCC;
+	/*cursor: none;*/
+}
