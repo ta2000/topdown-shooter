@@ -50,7 +50,7 @@ class Game {
 		var delta = now - this.then;
 		var modifier = delta/1000;
 
-		this.getInput();
+		this.processInput();
 		this.update(modifier);
 		this.draw();
 
@@ -58,7 +58,7 @@ class Game {
 		window.requestAnimationFrame(this.main.bind(this));
 	}
 
-	getInput() {
+	processInput() {
 		if (this.player != null) {
 			this.player.keys = this.keysPressed;
 		}
@@ -81,6 +81,27 @@ class Game {
 
         // If I was smart I could do this in a better way
         // (that goes for the whole project)
+        if (this.player.chunk.x > playerStartChunk.x) {
+            this.chunks[0] = this.chunks[1];
+            this.chunks[3] = this.chunks[4];
+            this.chunks[6] = this.chunks[7];
+            this.chunks[1] = this.chunks[2];
+            this.chunks[4] = this.chunks[5];
+            this.chunks[7] = this.chunks[8];
+            this.chunks[2] = new Chunk(this.player.chunk.x+1, this.player.chunk.y-1, this.chunkSize);
+            this.chunks[5] = new Chunk(this.player.chunk.x+1, this.player.chunk.y, this.chunkSize);
+            this.chunks[8] = new Chunk(this.player.chunk.x+1, this.player.chunk.y+1, this.chunkSize);
+        } else if (this.player.chunk.x < playerStartChunk.x) {
+            this.chunks[2] = this.chunks[1];
+            this.chunks[5] = this.chunks[4];
+            this.chunks[8] = this.chunks[7];
+            this.chunks[1] = this.chunks[0];
+            this.chunks[4] = this.chunks[3];
+            this.chunks[7] = this.chunks[6];
+            this.chunks[0] = new Chunk(this.player.chunk.x-1, this.player.chunk.y-1, this.chunkSize);
+            this.chunks[3] = new Chunk(this.player.chunk.x-1, this.player.chunk.y, this.chunkSize);
+            this.chunks[6] = new Chunk(this.player.chunk.x-1, this.player.chunk.y+1, this.chunkSize);
+        }
         if (this.player.chunk.y > playerStartChunk.y) {
             this.chunks[0] = this.chunks[3];
             this.chunks[1] = this.chunks[4];
@@ -92,12 +113,12 @@ class Game {
             this.chunks[7] = new Chunk(this.player.chunk.x, this.player.chunk.y + 1, this.chunkSize);
             this.chunks[8] = new Chunk(this.player.chunk.x+1, this.player.chunk.y + 1, this.chunkSize);
         } else if (this.player.chunk.y < playerStartChunk.y) {
-            this.chunks[3] = this.chunks[0];
-            this.chunks[4] = this.chunks[1];
-            this.chunks[5] = this.chunks[2];
             this.chunks[6] = this.chunks[3];
             this.chunks[7] = this.chunks[4];
             this.chunks[8] = this.chunks[5];
+            this.chunks[3] = this.chunks[0];
+            this.chunks[4] = this.chunks[1];
+            this.chunks[5] = this.chunks[2];
             this.chunks[0] = new Chunk(this.player.chunk.x-1, this.player.chunk.y - 1, this.chunkSize);
             this.chunks[1] = new Chunk(this.player.chunk.x, this.player.chunk.y - 1, this.chunkSize);
             this.chunks[2] = new Chunk(this.player.chunk.x+1, this.player.chunk.y - 1, this.chunkSize);
