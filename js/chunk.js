@@ -32,22 +32,22 @@ class Chunk {
         this.people[id].chunk.y = this.y;
     }
 
-    update(modifier, chunks) {
+    update(modifier, chunks, right, left, down, up) {
         for (var i in this.people) {
             this.people[i].update(modifier);
             if (this.outsideChunk(this.people[i].x, this.people[i].y)) {
                 if (this.people[i].x > this.size) {
-                    chunks[5].people[i] = this.people[i];
+                    chunks[right].people[i] = this.people[i];
                     this.people[i].chunk.x++;
                 } else if (this.people[i].x < 0) {
-                    chunks[3].people[i] = this.people[i];
+                    chunks[left].people[i] = this.people[i];
                     this.people[i].chunk.x--;
                 }
                 if (this.people[i].y > this.size) {
-                    chunks[7].people[i] = this.people[i];
+                    chunks[down].people[i] = this.people[i];
                     this.people[i].chunk.y++;
                 } else if (this.people[i].y < 0) {
-                    chunks[1].people[i] = this.people[i];
+                    chunks[up].people[i] = this.people[i];
                     this.people[i].chunk.y--;
                 }
 

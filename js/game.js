@@ -1,12 +1,12 @@
 "use strict";
 
 class Game {
-	constructor() {
-		this.canvas;
-		this.ctx;
+	constructor(viewDist=1, loadDist=1) {
+        this.canvas;
+        this.ctx;
         this.camera = {x:0, y:0};
-        this.viewDist = 1;
-        this.loadDist = 1;
+        this.viewDist = viewDist;
+        this.loadDist = loadDist;
         this.chunksPerRow = 2*this.loadDist+1;
         this.chunks = [];
         this.chunkSize = 1000;
@@ -42,7 +42,9 @@ class Game {
 		this.sprites["spr_soldier"] = new Sprite("sprites/soldier.gif", 128, 128);
 		this.player = new Person(this.sprites["spr_soldier"], 100, 100)
 		this.player.playerControlled = true;
-		this.chunks[4].spawnPerson("supertom", this.player);
+        var center = Math.floor(this.chunks.length/2);
+        console.log(center);
+		this.chunks[center].spawnPerson("supertom", this.player);
 
 		this.then = Date.now();
 		this.main();
@@ -66,8 +68,8 @@ class Game {
 			this.player.keys = this.keysPressed;
 		}
 		this.player.targetAngle = Math.atan2(
-            this.mouse.y - (this.player.y + this.chunkSize + this.player.sprite.height/2),
-            this.mouse.x - (this.player.x + this.chunkSize + this.player.sprite.width/2)
+            this.mouse.y - (this.player.y + this.chunkSize*this.viewDist + this.player.sprite.height/2),
+            this.mouse.x - (this.player.x + this.chunkSize*this.viewDist + this.player.sprite.width/2)
         );
 	}
 
@@ -79,7 +81,7 @@ class Game {
         var playerStartChunk = {x:this.player.chunk.x, y:this.player.chunk.y};
 
         for (var i=0; i<this.chunks.length; i++) {
-            this.chunks[i].update(modifier, this.chunks);
+            this.chunks[i].update(modifier, this.chunks, i+1, i-1, i+this.chunksPerRow, i-this.chunksPerRow);
         }
 
         // Shift chunks, generate new in player's moving direction,
@@ -91,10 +93,9 @@ class Game {
                 if (i/this.chunksPerRow+this.chunksPerRow < this.chunks.length) {
                     this.chunks[index] = this.chunks[index+1];
                 } else {
-                    var yOffset = (i/this.chunksPerRow)%3 - 1;
+                    var yOffset = (i/this.chunksPerRow)%this.chunksPerRow - 1;
                     this.chunks[index] = new Chunk(this.player.chunk.x + 1, this.player.chunk.y + yOffset, this.chunkSize);
                 }
-                console.log(i/3+3 < game.chunks.length, i%game.chunks.length + Math.floor(i/9), i%game.chunks.length + Math.floor(i/9)+1);
             }
         // Left
         } else if (this.player.chunk.x < playerStartChunk.x) {
@@ -140,8 +141,8 @@ class Game {
         this.ctx.setTransform(1,0,0,1,0,0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.camera.x = -(this.player.x + this.chunkSize) - this.player.sprite.width/2 + this.canvas.width/2;
-        this.camera.y = -(this.player.y + this.chunkSize) - this.player.sprite.height/2 + this.canvas.height/2;
+        this.camera.x = -(this.player.x + this.chunkSize*this.viewDist) - this.player.sprite.width/2 + this.canvas.width/2;
+        this.camera.y = -(this.player.y + this.chunkSize*this.viewDist) - this.player.sprite.height/2 + this.canvas.height/2;
         this.ctx.translate(this.camera.x, this.camera.y);
 
         for (var i=0; i<this.chunks.length; i++) {
