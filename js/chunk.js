@@ -3,15 +3,25 @@
 class Chunk {
     constructor(x, y, size) {
         this.people = {};
+        this.props = [];
         this.x = x;
         this.y = y;
         this.size = size;
         this.unloaded = []; // People who have gone into unloaded chunks
         this.color = "#1c722c";
+        this.generate();
     }
 
-    generate(seed) {
+    generate() {
+        var seed = ((this.x + this.y)*(this.x + this.y + 1)/2) + this.y;
+        var rand = this.random(seed);
 
+        this.props.push(new Prop(game.sprites["spr_tree"], rand*this.size, rand/seed*this.size));
+    }
+
+    random(seed) {
+        var rand = Math.sin(seed+1) * 10000;
+        return rand - Math.floor(rand);
     }
 
     spawnPerson(id, person) {
@@ -24,18 +34,6 @@ class Chunk {
         for (var i in this.people) {
             this.people[i].update(modifier);
             if (this.outsideChunk(this.people[i].x, this.people[i].y)) {
-                console.log(i + " has left chunk " + this.x + ", " + this.y);
-                /*if (this.people[i].y > this.size * (this.y+1)) {
-                    this.people[i].chunk.y++;
-                } else if (this.people[i].y < this.y*this.size) {
-                    this.people[i].chunk.y--;
-                }
-                if (this.people[i].x > this.size * (this.x+1)) {
-                    this.people[i].chunk.x++;
-                } else if (this.people[i].x < this.x*this.size) {
-                    this.people[i].chunk.x--;
-                }*/
-
                 if (this.people[i].x > this.size) {
                     chunks[5].people[i] = this.people[i];
                     this.people[i].chunk.x++;
@@ -58,9 +56,6 @@ class Chunk {
                 if (this.people[i].y < 0)
                     this.people[i].y += this.size;
 
-                /*console.log(this.people[i].chunk.x, this.people[i].chunk.y);
-                console.log(this.people[i].chunk.x + 3*this.people[i].chunk.y);
-                chunks[this.people[i].chunk.x + 3*this.people[i].chunk.y].people[i] = this.people[i];*/
                 delete this.people[i];
             }
         }
@@ -73,23 +68,16 @@ class Chunk {
             y > this.size ||
             y < 0
         );
-        /*return (
-            x > this.size * (this.x+1) ||
-            x < this.x * this.size ||
-            y > this.size * (this.y+1) ||
-            y < this.y * this.size
-        );*/
     }
 
     drawBackground(ctx, drawX, drawY) {
-        /*ctx.fillStyle = "#000000";
-        ctx.fillRect(this.x*this.size, this.y*this.size, this.size, this.size);
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.x*this.size+4, this.y*this.size+4, this.size-8, this.size-8);*/
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(drawX*this.size, drawY*this.size, this.size, this.size);
-        ctx.fillStyle = this.color;
-        ctx.fillRect(drawX*this.size+4, drawY*this.size+4, this.size-8, this.size-8);
+        ctx.fillRect(
+            drawX*this.size-1,
+            drawY*this.size-1,
+            this.size+2,
+            this.size+2
+        );
 
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "48px Arial";
@@ -100,13 +88,22 @@ class Chunk {
         );
     }
 
-    drawForeground(ctx) {
+    drawForeground(ctx, drawX, drawY) {
+        for (var i=0; i<this.props.length; i++) {
+            this.props[i].sprite.draw(
+                ctx,
+                0,
+                drawX*this.size + this.props[i].x,
+                drawY*this.size + this.props[i].y
+            );
+        }
+
         for (var i in this.people) {
             this.people[i].sprite.draw(
                 ctx,
                 this.people[i].angle,
-                this.people[i].x + this.size,
-                this.people[i].y + this.size
+                drawX*this.size + this.people[i].x,
+                drawY*this.size + this.people[i].y
             );
         }
     }

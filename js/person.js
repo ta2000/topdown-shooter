@@ -5,7 +5,7 @@ class Person {
 		this.sprite = sprite;
 		this.x = x;
 		this.y = y;
-        this.chunk = {x:0,y:0};
+        this.chunk = {x:1,y:1};
 		this.keys = {};
 		this.angle = 0;
 		this.targetAngle = 0;

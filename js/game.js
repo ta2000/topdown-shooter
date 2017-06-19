@@ -27,6 +27,8 @@ class Game {
 		window.onkeyup = this.keyUp.bind(this);
 		this.canvas.addEventListener("mousemove", this.mouseMove.bind(this));
 
+		this.sprites["spr_tree"] = new Sprite("sprites/tree.png", 128, 128);
+
         for (var x=0; x<3; x++) {
             for (var y=0; y<3; y++) {
                 this.chunks.push(new Chunk(y,x,this.chunkSize));
@@ -142,7 +144,7 @@ class Game {
             this.chunks[i].drawBackground(this.ctx, i%3, Math.floor(i/3));
         }
         for (var i=0; i<this.chunks.length; i++) {
-            this.chunks[i].drawForeground(this.ctx);
+            this.chunks[i].drawForeground(this.ctx, i%3, Math.floor(i/3));
         }
 
 		this.mouse.sprite.draw(this.ctx, 0, this.mouse.x, this.mouse.y);
