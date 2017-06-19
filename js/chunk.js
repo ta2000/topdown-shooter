@@ -16,7 +16,9 @@ class Chunk {
         var seed = ((this.x + this.y)*(this.x + this.y + 1)/2) + this.y;
         var rand = this.random(seed);
 
-        this.props.push(new Prop(game.sprites["spr_tree"], rand*this.size, rand/seed*this.size));
+        var x = rand*this.size;
+        var y = this.random(rand)*this.size;
+        this.props.push(new Prop(game.sprites["spr_tree"], x, y));
     }
 
     random(seed) {

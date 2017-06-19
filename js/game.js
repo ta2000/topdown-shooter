@@ -7,6 +7,7 @@ class Game {
         this.camera = {x:0, y:0};
         this.viewDist = 1;
         this.loadDist = 1;
+        this.chunksPerRow = 2*this.loadDist+1;
         this.chunks = [];
         this.chunkSize = 1000;
         this.sprites = {};
@@ -29,8 +30,8 @@ class Game {
 
 		this.sprites["spr_tree"] = new Sprite("sprites/tree.png", 128, 128);
 
-        for (var x=0; x<3; x++) {
-            for (var y=0; y<3; y++) {
+        for (var x=0; x<this.chunksPerRow; x++) {
+            for (var y=0; y<this.chunksPerRow; y++) {
                 this.chunks.push(new Chunk(y,x,this.chunkSize));
             }
         }
@@ -81,49 +82,52 @@ class Game {
             this.chunks[i].update(modifier, this.chunks);
         }
 
-        // If I was smart I could do this in a better way
-        // (that goes for the whole project)
+        // Shift chunks, generate new in player's moving direction,
+        // discard chunks player is moving away from
+        // Right
         if (this.player.chunk.x > playerStartChunk.x) {
-            this.chunks[0] = this.chunks[1];
-            this.chunks[3] = this.chunks[4];
-            this.chunks[6] = this.chunks[7];
-            this.chunks[1] = this.chunks[2];
-            this.chunks[4] = this.chunks[5];
-            this.chunks[7] = this.chunks[8];
-            this.chunks[2] = new Chunk(this.player.chunk.x+1, this.player.chunk.y-1, this.chunkSize);
-            this.chunks[5] = new Chunk(this.player.chunk.x+1, this.player.chunk.y, this.chunkSize);
-            this.chunks[8] = new Chunk(this.player.chunk.x+1, this.player.chunk.y+1, this.chunkSize);
+            for (var i=0; i<this.chunks.length*this.chunksPerRow; i+=this.chunksPerRow) {
+                var index = i%this.chunks.length + Math.floor(i/this.chunks.length);
+                if (i/this.chunksPerRow+this.chunksPerRow < this.chunks.length) {
+                    this.chunks[index] = this.chunks[index+1];
+                } else {
+                    var yOffset = (i/this.chunksPerRow)%3 - 1;
+                    this.chunks[index] = new Chunk(this.player.chunk.x + 1, this.player.chunk.y + yOffset, this.chunkSize);
+                }
+                console.log(i/3+3 < game.chunks.length, i%game.chunks.length + Math.floor(i/9), i%game.chunks.length + Math.floor(i/9)+1);
+            }
+        // Left
         } else if (this.player.chunk.x < playerStartChunk.x) {
-            this.chunks[2] = this.chunks[1];
-            this.chunks[5] = this.chunks[4];
-            this.chunks[8] = this.chunks[7];
-            this.chunks[1] = this.chunks[0];
-            this.chunks[4] = this.chunks[3];
-            this.chunks[7] = this.chunks[6];
-            this.chunks[0] = new Chunk(this.player.chunk.x-1, this.player.chunk.y-1, this.chunkSize);
-            this.chunks[3] = new Chunk(this.player.chunk.x-1, this.player.chunk.y, this.chunkSize);
-            this.chunks[6] = new Chunk(this.player.chunk.x-1, this.player.chunk.y+1, this.chunkSize);
+            for (var i=this.chunks.length*this.chunksPerRow-this.chunksPerRow; i>=0; i-=this.chunksPerRow) {
+                var index = i%this.chunks.length + Math.floor(i/this.chunks.length);
+                if (i/this.chunksPerRow-this.chunksPerRow >= 0) {
+                    this.chunks[index] = this.chunks[index-1];
+                } else {
+                    var yOffset = (i/this.chunksPerRow)%3 - 1;
+                    this.chunks[index] = new Chunk(this.player.chunk.x - 1, this.player.chunk.y + yOffset, this.chunkSize);
+                }
+            }
         }
+        // Down
         if (this.player.chunk.y > playerStartChunk.y) {
-            this.chunks[0] = this.chunks[3];
-            this.chunks[1] = this.chunks[4];
-            this.chunks[2] = this.chunks[5];
-            this.chunks[3] = this.chunks[6];
-            this.chunks[4] = this.chunks[7];
-            this.chunks[5] = this.chunks[8];
-            this.chunks[6] = new Chunk(this.player.chunk.x-1, this.player.chunk.y + 1, this.chunkSize);
-            this.chunks[7] = new Chunk(this.player.chunk.x, this.player.chunk.y + 1, this.chunkSize);
-            this.chunks[8] = new Chunk(this.player.chunk.x+1, this.player.chunk.y + 1, this.chunkSize);
+			for (var i=0; i<this.chunks.length; i++) {
+				if (i+this.chunksPerRow < this.chunks.length) {
+					this.chunks[i] = this.chunks[i+this.chunksPerRow];
+				} else {
+					var xOffset = i%this.chunksPerRow - 1;
+					this.chunks[i] = new Chunk(this.player.chunk.x + xOffset, this.player.chunk.y + 1, this.chunkSize);
+				}
+			}
+        // Up
         } else if (this.player.chunk.y < playerStartChunk.y) {
-            this.chunks[6] = this.chunks[3];
-            this.chunks[7] = this.chunks[4];
-            this.chunks[8] = this.chunks[5];
-            this.chunks[3] = this.chunks[0];
-            this.chunks[4] = this.chunks[1];
-            this.chunks[5] = this.chunks[2];
-            this.chunks[0] = new Chunk(this.player.chunk.x-1, this.player.chunk.y - 1, this.chunkSize);
-            this.chunks[1] = new Chunk(this.player.chunk.x, this.player.chunk.y - 1, this.chunkSize);
-            this.chunks[2] = new Chunk(this.player.chunk.x+1, this.player.chunk.y - 1, this.chunkSize);
+			for (var i=this.chunks.length-1; i>=0; i--) {
+				if (i-this.chunksPerRow >= 0) {
+					this.chunks[i] = this.chunks[i-this.chunksPerRow];
+				} else {
+					var xOffset = i%this.chunksPerRow - 1;
+					this.chunks[i] = new Chunk(this.player.chunk.x + xOffset, this.player.chunk.y - 1, this.chunkSize);
+				}
+			}
         }
 
         this.mouse.x -= playerStart.x - this.player.x;
@@ -141,10 +145,10 @@ class Game {
         this.ctx.translate(this.camera.x, this.camera.y);
 
         for (var i=0; i<this.chunks.length; i++) {
-            this.chunks[i].drawBackground(this.ctx, i%3, Math.floor(i/3));
+            this.chunks[i].drawBackground(this.ctx, i%this.chunksPerRow, Math.floor(i/this.chunksPerRow));
         }
         for (var i=0; i<this.chunks.length; i++) {
-            this.chunks[i].drawForeground(this.ctx, i%3, Math.floor(i/3));
+            this.chunks[i].drawForeground(this.ctx, i%this.chunksPerRow, Math.floor(i/this.chunksPerRow));
         }
 
 		this.mouse.sprite.draw(this.ctx, 0, this.mouse.x, this.mouse.y);
